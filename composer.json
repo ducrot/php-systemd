@@ -1,0 +1,21 @@
+{
+  "name": "timostamm/php-systemd",
+  "description": "Provides access to some systemd commands via PHP",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Timo Stamm",
+      "email": "ts@timostamm.de"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "symfony/process": "^4"
+  },
+  "autoload": {
+    "psr-4": {
+      "TS\\PhpSystemD\\": "src/"
+    }
+  }
+}
