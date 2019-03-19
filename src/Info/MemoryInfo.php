@@ -6,7 +6,7 @@
  * Time: 01:54
  */
 
-namespace MototokCloud\System\Info;
+namespace TS\PhpSystemD\Info;
 
 
 class MemoryInfo

@@ -6,15 +6,15 @@
  * Time: 00:42
  */
 
-namespace MototokCloud\System;
+namespace TS\PhpSystemD;
 
 
-use MototokCloud\System\Info\AbstractUnitInfo;
-use MototokCloud\System\Info\MemoryInfo;
-use MototokCloud\System\Info\ServiceInfo;
-use MototokCloud\System\Info\TimerInfo;
-use MototokCloud\System\Info\UptimeInfo;
 use Symfony\Component\Process\Process;
+use TS\PhpSystemD\Info\AbstractUnitInfo;
+use TS\PhpSystemD\Info\MemoryInfo;
+use TS\PhpSystemD\Info\ServiceInfo;
+use TS\PhpSystemD\Info\TimerInfo;
+use TS\PhpSystemD\Info\UptimeInfo;
 
 class InfoBuilder
 {
@@ -35,10 +35,10 @@ class InfoBuilder
 
     public function uptime(): UptimeInfo
     {
-        $process = (new Process('uptime -p'));
+        $process = new Process(['uptime -p']);
         $uptimePretty = trim($process->mustRun()->getOutput());
 
-        $process = new Process('uptime');
+        $process = new Process(['uptime']);
         $output = $process->mustRun()->getOutput();
         $ok = preg_match('/load averages?: ([0-9]+(?:,|.)[0-9]+),? ([0-9]+(?:,|.)[0-9]+),? ([0-9]+(?:,|.)[0-9]+)/', $output, $matches);
         if (!$ok) {
@@ -59,7 +59,7 @@ class InfoBuilder
 
     public function memory(): MemoryInfo
     {
-        $process = new Process('free --bytes');
+        $process = new Process(['free --bytes']);
         $process->run();
         $output = $process->getOutput();
 

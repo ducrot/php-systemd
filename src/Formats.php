@@ -6,7 +6,7 @@
  * Time: 00:39
  */
 
-namespace MototokCloud\System;
+namespace TS\PhpSystemD;
 
 
 class Formats

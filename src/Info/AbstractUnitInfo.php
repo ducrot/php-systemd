@@ -6,7 +6,7 @@
  * Time: 14:47
  */
 
-namespace MototokCloud\System\Info;
+namespace TS\PhpSystemD\Info;
 
 
 abstract class AbstractUnitInfo
@@ -109,8 +109,6 @@ abstract class AbstractUnitInfo
     {
         return $this->statusText;
     }
-
-
 
 
 }

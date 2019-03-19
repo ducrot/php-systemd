@@ -6,7 +6,7 @@
  * Time: 00:19
  */
 
-namespace MototokCloud\System\Info;
+namespace TS\PhpSystemD\Info;
 
 class TimerInfo extends AbstractUnitInfo
 {

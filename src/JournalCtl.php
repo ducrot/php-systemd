@@ -6,7 +6,7 @@
  * Time: 00:19
  */
 
-namespace MototokCloud\System;
+namespace TS\PhpSystemD;
 
 use Symfony\Component\Process\Process;
 
