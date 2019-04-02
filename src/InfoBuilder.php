@@ -15,9 +15,15 @@ use TS\PhpSystemD\Info\MemoryInfo;
 use TS\PhpSystemD\Info\ServiceInfo;
 use TS\PhpSystemD\Info\TimerInfo;
 use TS\PhpSystemD\Info\UptimeInfo;
+use TS\Web\Resource\Exception\LogicException;
 
 class InfoBuilder
 {
+
+
+    private const RE_MEM = '/^Mem:\h+([0-9]+)\h+([0-9]+)/m';
+    private const RE_SWAP = '/^Swap:\h+([0-9]+)\h+([0-9]+)/m';
+    private const RE_UPTIME_LOAD = '/load averages?: ([0-9]+(?:,|.)[0-9]+),? ([0-9]+(?:,|.)[0-9]+),? ([0-9]+(?:,|.)[0-9]+)/';
 
 
     /** @var SystemCtl */
@@ -35,14 +41,19 @@ class InfoBuilder
 
     public function uptime(): UptimeInfo
     {
-        $process = new Process(['uptime -p']);
+        $process = new Process(['uptime', ' -p']);
         $uptimePretty = trim($process->mustRun()->getOutput());
 
         $process = new Process(['uptime']);
         $output = $process->mustRun()->getOutput();
-        $ok = preg_match('/load averages?: ([0-9]+(?:,|.)[0-9]+),? ([0-9]+(?:,|.)[0-9]+),? ([0-9]+(?:,|.)[0-9]+)/', $output, $matches);
-        if (!$ok) {
-            throw new \LogicException();
+        $ok = preg_match(self::RE_UPTIME_LOAD, $output, $matches);
+        if ($ok === false) {
+            $msg = sprintf('RegEx error: %s', preg_last_error());
+            throw new \LogicException($msg);
+        }
+        if ($ok === 0) {
+            $msg = sprintf('No regex match for uptime load averages. RegEx: "%s", text: "%s"', self::RE_UPTIME_LOAD, $output);
+            throw new \LogicException($msg);
         }
         $loadAvg1 = floatval(str_replace(',', '.', $matches[1]));
         $loadAvg5 = floatval(str_replace(',', '.', $matches[2]));
@@ -59,20 +70,28 @@ class InfoBuilder
 
     public function memory(): MemoryInfo
     {
-        $process = new Process(['free --bytes']);
-        $process->run();
+        $process = new Process(['free', ' --bytes']);
+        $process->mustRun();
         $output = $process->getOutput();
-
-        $ok = preg_match('/^Mem:\h+([0-9]+)\h+([0-9]+)/m', $output, $matches);
-        if (!$ok) {
-            throw new \LogicException();
+        $ok = preg_match(self::RE_MEM, $output, $matches);
+        if ($ok === false) {
+            $msg = sprintf('RegEx error: %s', preg_last_error());
+            throw new \LogicException($msg);
+        }
+        if ($ok === 0) {
+            $msg = sprintf('No regex match for memory info. RegEx: "%s", text: "%s"', self::RE_MEM, $output);
+            throw new \LogicException($msg);
         }
         $memTotal = $matches[1];
         $memUsed = $matches[2];
-
-        $ok = preg_match('/^Swap:\h+([0-9]+)\h+([0-9]+)/m', $output, $matches);
-        if (!$ok) {
-            throw new \LogicException();
+        $ok = preg_match(self::RE_SWAP, $output, $matches);
+        if ($ok === false) {
+            $msg = sprintf('RegEx error: %s', preg_last_error());
+            throw new \LogicException($msg);
+        }
+        if ($ok === 0) {
+            $msg = sprintf('No regex match for swap info. RegEx: "%s", text: "%s"', self::RE_SWAP, $output);
+            throw new \LogicException($msg);
         }
         $swapTotal = $matches[1];
         $swapUsed = $matches[2];
