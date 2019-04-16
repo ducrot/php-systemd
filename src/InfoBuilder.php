@@ -15,7 +15,6 @@ use TS\PhpSystemD\Info\MemoryInfo;
 use TS\PhpSystemD\Info\ServiceInfo;
 use TS\PhpSystemD\Info\TimerInfo;
 use TS\PhpSystemD\Info\UptimeInfo;
-use TS\Web\Resource\Exception\LogicException;
 
 class InfoBuilder
 {
@@ -41,7 +40,7 @@ class InfoBuilder
 
     public function uptime(): UptimeInfo
     {
-        $process = new Process(['uptime', ' -p']);
+        $process = new Process(['uptime', '-p']);
         $uptimePretty = trim($process->mustRun()->getOutput());
 
         $process = new Process(['uptime']);
@@ -70,7 +69,7 @@ class InfoBuilder
 
     public function memory(): MemoryInfo
     {
-        $process = new Process(['free', ' --bytes']);
+        $process = new Process(['free', '--bytes']);
         $process->mustRun();
         $output = $process->getOutput();
         $ok = preg_match(self::RE_MEM, $output, $matches);
