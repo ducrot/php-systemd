@@ -9,12 +9,14 @@
 namespace TS\PhpSystemD;
 
 
+use LogicException;
 use Symfony\Component\Process\Process;
 use TS\PhpSystemD\Info\AbstractUnitInfo;
 use TS\PhpSystemD\Info\MemoryInfo;
 use TS\PhpSystemD\Info\ServiceInfo;
 use TS\PhpSystemD\Info\TimerInfo;
 use TS\PhpSystemD\Info\UptimeInfo;
+use UnexpectedValueException;
 
 class InfoBuilder
 {
@@ -48,11 +50,11 @@ class InfoBuilder
         $ok = preg_match(self::RE_UPTIME_LOAD, $output, $matches);
         if ($ok === false) {
             $msg = sprintf('RegEx error: %s', preg_last_error());
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         if ($ok === 0) {
             $msg = sprintf('No regex match for uptime load averages. RegEx: "%s", text: "%s"', self::RE_UPTIME_LOAD, $output);
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         $loadAvg1 = floatval(str_replace(',', '.', $matches[1]));
         $loadAvg5 = floatval(str_replace(',', '.', $matches[2]));
@@ -75,22 +77,22 @@ class InfoBuilder
         $ok = preg_match(self::RE_MEM, $output, $matches);
         if ($ok === false) {
             $msg = sprintf('RegEx error: %s', preg_last_error());
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         if ($ok === 0) {
             $msg = sprintf('No regex match for memory info. RegEx: "%s", text: "%s"', self::RE_MEM, $output);
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         $memTotal = $matches[1];
         $memUsed = $matches[2];
         $ok = preg_match(self::RE_SWAP, $output, $matches);
         if ($ok === false) {
             $msg = sprintf('RegEx error: %s', preg_last_error());
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         if ($ok === 0) {
             $msg = sprintf('No regex match for swap info. RegEx: "%s", text: "%s"', self::RE_SWAP, $output);
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         $swapTotal = $matches[1];
         $swapUsed = $matches[2];
@@ -104,7 +106,7 @@ class InfoBuilder
         $id = $this->systemCtl->showProperty($unit, 'Id');
         if (empty($id)) {
             $msg = sprintf('Unable to get Id of %s: Unit seems to be unknown.', $unit);
-            throw new \UnexpectedValueException($msg);
+            throw new UnexpectedValueException($msg);
         }
         $ext = pathinfo($id, PATHINFO_EXTENSION);
         if ($ext === 'service') {
@@ -113,7 +115,7 @@ class InfoBuilder
             return $this->getTimerInfo($unit);
         }
         $msg = sprintf('Unable to get info for %s: Unsupported unit type %s.', $id, $ext);
-        throw new \UnexpectedValueException($msg);
+        throw new UnexpectedValueException($msg);
     }
 
 

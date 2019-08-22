@@ -8,6 +8,7 @@
 
 namespace TS\PhpSystemD;
 
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 
@@ -17,6 +18,9 @@ class JournalCtl
 
     /** @var string */
     private $command;
+
+    /** @var float */
+    private $commandTimeout;
 
     /** @var string[] */
     private $outputFields;
@@ -43,10 +47,12 @@ class JournalCtl
     /**
      * JournalCtl constructor.
      * @param string $command
+     * @param float $commandTimeout
      */
-    public function __construct(string $command = 'journalctl')
+    public function __construct(string $command = 'journalctl', float $commandTimeout = 60)
     {
         $this->command = $command;
+        $this->commandTimeout = $commandTimeout;
     }
 
     /**
@@ -74,7 +80,7 @@ class JournalCtl
             return $process->getOutput();
         } else {
             $msg = sprintf('An error occurred while running "%s": %s', $process->getCommandLine(), $process->getErrorOutput());
-            throw new \RuntimeException($msg);
+            throw new RuntimeException($msg);
         }
     }
 
@@ -199,7 +205,7 @@ class JournalCtl
             array_push($commandline, ...$args);
         }
 
-        return new Process($commandline, null, null, null, 60);
+        return new Process($commandline, null, null, null, $this->commandTimeout);
     }
 
 

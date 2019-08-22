@@ -8,7 +8,10 @@
 
 namespace TS\PhpSystemD;
 
+use DateTimeImmutable;
+use LogicException;
 use Symfony\Component\Process\Process;
+use UnexpectedValueException;
 
 class SystemCtl
 {
@@ -17,22 +20,27 @@ class SystemCtl
     /** @var string */
     private $command;
 
+    /** @var float */
+    private $commandTimeout;
+
 
     /**
      * SystemCtl constructor.
      * @param string $command
+     * @param float $commandTimeout
      */
-    public function __construct(string $command = 'systemctl')
+    public function __construct(string $command = 'systemctl', float $commandTimeout = 60)
     {
         $this->command = $command;
+        $this->commandTimeout = $commandTimeout;
     }
 
 
     /**
-     * @throws \UnexpectedValueException if service is not found
      * @param string $unit
      * @param int $numJournalLines
      * @return string
+     * @throws UnexpectedValueException if service is not found
      */
     public function status(string $unit, int $numJournalLines = 0): string
     {
@@ -43,43 +51,43 @@ class SystemCtl
             return $process->getOutput();
         } else {
             $msg = sprintf('Unable to get status for %s: %s', $unit, $process->getErrorOutput());
-            throw new \UnexpectedValueException($msg);
+            throw new UnexpectedValueException($msg);
         }
     }
 
 
     /**
-     * @throws \UnexpectedValueException if service is not found
      * @param string $unit
+     * @throws UnexpectedValueException if service is not found
      */
     public function stop(string $unit): void
     {
         $process = $this->runProcess(['stop', $unit]);
         if (!$process->isSuccessful()) {
             $msg = sprintf('Unable to stop %s: %s', $unit, $process->getErrorOutput());
-            throw new \UnexpectedValueException($msg);
+            throw new UnexpectedValueException($msg);
         }
     }
 
 
     /**
-     * @throws \UnexpectedValueException if service is not found
      * @param string $unit
+     * @throws UnexpectedValueException if service is not found
      */
     public function start(string $unit): void
     {
         $process = $this->runProcess(['start', $unit]);
         if (!$process->isSuccessful()) {
             $msg = sprintf('Unable to start %s: %s', $unit, $process->getErrorOutput());
-            throw new \UnexpectedValueException($msg);
+            throw new UnexpectedValueException($msg);
         }
     }
 
 
     /**
-     * @throws \UnexpectedValueException if service is not found
      * @param string $unit
      * @return bool
+     * @throws UnexpectedValueException if service is not found
      */
     public function isEnabled(string $unit): bool
     {
@@ -93,9 +101,9 @@ class SystemCtl
         $err = $process->getErrorOutput();
         if (empty ($err)) {
             $msg = sprintf('Unable to check if %s is enabled.', $unit);
-            throw new \UnexpectedValueException($msg);
+            throw new UnexpectedValueException($msg);
         } else {
-            throw new \UnexpectedValueException($process->getErrorOutput());
+            throw new UnexpectedValueException($process->getErrorOutput());
         }
     }
 
@@ -150,19 +158,19 @@ class SystemCtl
         $ok = preg_match_all('/^([A-Za-z]+)=(.*)$/m', $value, $matches);
         if ($ok === false) {
             $msg = sprintf('regex error: %s', preg_last_error());
-            throw new \LogicException($msg);
+            throw new LogicException($msg);
         }
         return array_combine($matches[1], $matches[2]);
     }
 
 
     /**
-     * @throws \UnexpectedValueException if date could not be parsed
      * @param string $unit
      * @param string $property
-     * @return \DateTimeImmutable|null
+     * @return DateTimeImmutable|null
+     * @throws UnexpectedValueException if date could not be parsed
      */
-    public function showPropertyDate(string $unit, string $property): ?\DateTimeImmutable
+    public function showPropertyDate(string $unit, string $property): ?DateTimeImmutable
     {
         $value = $this->showProperty($unit, $property);
         if (is_null($value)) {
@@ -173,10 +181,10 @@ class SystemCtl
 
 
     /**
-     * @throws \UnexpectedValueException if date could not be parsed
      * @param string $unit
      * @param string $property
      * @return bool|null
+     * @throws UnexpectedValueException if date could not be parsed
      */
     public function showPropertyBool(string $unit, string $property): ?bool
     {
@@ -191,7 +199,7 @@ class SystemCtl
             return true;
         }
         $msg = sprintf('Unable to parse %s property %s as boolean from value "%s".', $unit, $property, $value);
-        throw new \UnexpectedValueException($msg);
+        throw new UnexpectedValueException($msg);
     }
 
 
@@ -199,7 +207,7 @@ class SystemCtl
     {
         $commandline = [$this->command];
         array_push($commandline, ...$args);
-        $process = new Process($commandline, null, null, null, 5);
+        $process = new Process($commandline, null, null, null, $this->commandTimeout);
         $process->run();
         return $process;
     }
