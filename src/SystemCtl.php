@@ -86,6 +86,20 @@ class SystemCtl
 
     /**
      * @param string $unit
+     * @throws UnexpectedValueException if service is not found
+     */
+    public function restart(string $unit): void
+    {
+        $process = $this->runProcess(['restart', $unit]);
+        if (!$process->isSuccessful()) {
+            $msg = sprintf('Unable to start %s: %s', $unit, $process->getErrorOutput());
+            throw new UnexpectedValueException($msg);
+        }
+    }
+
+
+    /**
+     * @param string $unit
      * @return bool
      * @throws UnexpectedValueException if service is not found
      */
